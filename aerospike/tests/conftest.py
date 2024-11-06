@@ -39,6 +39,8 @@ def init_db():
         'quote_cnt': 47,
     }
     client.put(key, bins)
+    # Create at least 1 index
+    client.index_string_create('test', 'characters', 'name', 'idx_characters_name')
 
     batch_keys = []
     for i in range(10):

@@ -8,7 +8,14 @@ import pytest
 from datadog_checks.aerospike import AerospikeCheck
 from datadog_checks.dev.utils import get_metadata_metrics
 
-from .common import EXPECTED_PROMETHEUS_METRICS, EXPECTED_PROMETHEUS_METRICS_5_6, HERE, PROMETHEUS_XDR_METRICS
+from .common import (
+    EXPECTED_PROMETHEUS_METRICS_6,
+    EXPECTED_PROMETHEUS_METRICS_7,
+    EXPECTED_PROMETHEUS_METRICS_LEGACY,
+    HERE,
+    PROMETHEUS_XDR_METRICS,
+    VERSION,
+)
 
 pytestmark = [pytest.mark.unit]
 
@@ -18,12 +25,22 @@ def get_fixture_path(filename):
 
 
 def test_openmetricsv2_check(aggregator, dd_run_check, instance_openmetrics_v2, mock_http_response):
+    version_parts = [int(p) for p in VERSION.split('.')]
     mock_http_response(file_path=get_fixture_path('prometheus.txt'))
 
     check = AerospikeCheck('aerospike', {}, [instance_openmetrics_v2])
     dd_run_check(check)
 
-    for metric_name in EXPECTED_PROMETHEUS_METRICS + EXPECTED_PROMETHEUS_METRICS_5_6 + PROMETHEUS_XDR_METRICS:
+    all_metrics = PROMETHEUS_XDR_METRICS
+
+    if version_parts >= [7]:
+        all_metrics.extend(EXPECTED_PROMETHEUS_METRICS_7)
+    elif version_parts >= [6, 1]:
+        all_metrics.extend(EXPECTED_PROMETHEUS_METRICS_6)
+    else:
+        all_metrics.extend(EXPECTED_PROMETHEUS_METRICS_LEGACY)
+
+    for metric_name in all_metrics:
         aggregator.assert_metric(metric_name)
 
         aggregator.assert_metric_has_tag(

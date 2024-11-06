@@ -35,14 +35,7 @@ EXPECTED_PROMETHEUS_METRICS = [
     'aerospike.namespace.client_write_filtered_out.count',
     'aerospike.namespace.clock_skew_stop_writes',
     'aerospike.namespace.dead_partitions',
-    'aerospike.namespace.device_available_pct',
     'aerospike.namespace.hwm_breached',
-    'aerospike.namespace.memory_free_pct',
-    'aerospike.namespace.memory_used_bytes',
-    'aerospike.namespace.scan_aggr_error.count',
-    'aerospike.namespace.scan_basic_error.count',
-    'aerospike.namespace.scan_ops_bg_error.count',
-    'aerospike.namespace.scan_udf_bg_error.count',
     'aerospike.namespace.stop_writes',
     'aerospike.namespace.storage_engine_file_write_q',
     'aerospike.namespace.unavailable_partitions',
@@ -55,11 +48,36 @@ EXPECTED_PROMETHEUS_METRICS = [
     'aerospike.namespace.storage_engine_file_defrag_q',
 ]
 
-EXPECTED_PROMETHEUS_METRICS_5_6 = [
+EXPECTED_PROMETHEUS_METRICS_LEGACY = [
+    'aerospike.namespace.scan_aggr_error.count',
+    'aerospike.namespace.scan_basic_error.count',
+    'aerospike.namespace.device_available_pct',
+    'aerospike.namespace.memory_free_pct',
+    'aerospike.namespace.memory_used_bytes',
+    'aerospike.namespace.scan_ops_bg_error.count',
+    'aerospike.namespace.scan_udf_bg_error.count',
     'aerospike.node_stats.client_connections_opened.count',
     'aerospike.node_stats.fabric_connections_opened.count',
     'aerospike.node_stats.heartbeat_connections_opened.count',
 ]
+EXPECTED_PROMETHEUS_METRICS_LEGACY.extend(EXPECTED_PROMETHEUS_METRICS)
+
+EXPECTED_PROMETHEUS_METRICS_6 = [
+    'aerospike.namespace.device_available_pct',
+    'aerospike.namespace.memory_free_pct',
+    'aerospike.namespace.memory_used_bytes',
+    'aerospike.node_stats.client_connections_opened.count',
+    'aerospike.node_stats.fabric_connections_opened.count',
+    'aerospike.node_stats.heartbeat_connections_opened.count',
+]
+EXPECTED_PROMETHEUS_METRICS_6.extend(EXPECTED_PROMETHEUS_METRICS)
+
+EXPECTED_PROMETHEUS_METRICS_7 = [
+    'aerospike.node_stats.client_connections_opened.count',
+    'aerospike.node_stats.fabric_connections_opened.count',
+    'aerospike.node_stats.heartbeat_connections_opened.count',
+]
+EXPECTED_PROMETHEUS_METRICS_7.extend(EXPECTED_PROMETHEUS_METRICS)
 
 PROMETHEUS_XDR_METRICS = [
     'aerospike.xdr.abandoned.count',
@@ -74,7 +92,7 @@ PROMETHEUS_XDR_METRICS = [
     'aerospike.xdr.success.count',
 ]
 
-NAMESPACE_METRICS = [
+LEGACY_NAMESPACE_METRICS = [
     'objects',
     'hwm_breached',
     'client_write_error',
@@ -85,6 +103,15 @@ NAMESPACE_METRICS = [
     'ops_sub_write_success',
 ]
 
+NAMESPACE_METRICS = [
+    "latency.batch_sub_read",
+    "latency.batch_sub_read_ops_sec",
+    "latency.batch_sub_read_over_1ms",
+    "latency.batch_sub_read_over_64ms",
+    "latency.batch_sub_read_over_8ms",
+]
+NAMESPACE_METRICS.extend(LEGACY_NAMESPACE_METRICS)
+
 TPS_METRICS = [
     'tps.write',
     'tps.read',
@@ -93,14 +120,80 @@ TPS_METRICS = [
 LEGACY_SET_METRICS = [
     'tombstones',
     'memory_data_bytes',
+    'device_data_bytes',
     'truncate_lut',
     'objects',
     'stop_writes_count',
     'disable_eviction',
+    'enable_index',
+    'index_populating',
+    'sindexes',
 ]
 
-SET_METRICS = ['enable_index', 'index_populating', 'sindexes']
-SET_METRICS.extend(LEGACY_SET_METRICS)
+INDEX_METRICS = [
+    "entries",
+    "entries_per_bval",
+    "entries_per_rec",
+    "load_pct",
+    "load_time",
+    "stat_gc_recs",
+    "used_bytes",
+]
+
+LEGACY_INDEX_METRICS = [
+    "delete_error",
+    "delete_success",
+    "entries",
+    "histogram",
+    "ibtr_memory_used",
+    "keys",
+    "load_pct",
+    "loadtime",
+    "nbtr_memory_used",
+    "query_agg",
+    "query_agg_avg_rec_count",
+    "query_agg_avg_record_size",
+    "query_avg_rec_count",
+    "query_avg_record_size",
+    "query_lookup_avg_rec_count",
+    "query_lookup_avg_record_size",
+    "query_lookups",
+    "query_reqs",
+    "si_accounted_memory",
+    "stat_gc_recs",
+    "stat_gc_time",
+    "write_error",
+    "write_success",
+]
+
+INDEX_METRICS_6_1 = [
+    "entries",
+    "entries_per_bval",
+    "entries_per_rec",
+    "load_pct",
+    "load_time",
+    "stat_gc_recs",
+    "memory_used",
+]
+
+SET_METRICS_6_4 = ['stop_writes_size', 'truncating']
+SET_METRICS_6_4.extend(LEGACY_SET_METRICS)
+
+SET_METRICS = [
+    "data_used_bytes",
+    "default_read_touch_ttl_pct",
+    "default_ttl",
+    "disable_eviction",
+    "enable_index",
+    "index_populating",
+    "objects",
+    "sindexes",
+    "stop_writes_count",
+    "stop_writes_size",
+    "tombstones",
+    "truncate_lut",
+    "truncating",
+]
 
 ALL_METRICS = NAMESPACE_METRICS + LEGACY_SET_METRICS
 

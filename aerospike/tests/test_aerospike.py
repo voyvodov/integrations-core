@@ -11,15 +11,19 @@ from datadog_checks.base import AgentCheck
 from datadog_checks.dev.utils import get_metadata_metrics
 
 from .common import (
-    EXPECTED_PROMETHEUS_METRICS,
-    EXPECTED_PROMETHEUS_METRICS_5_6,
+    EXPECTED_PROMETHEUS_METRICS_6,
+    EXPECTED_PROMETHEUS_METRICS_7,
+    EXPECTED_PROMETHEUS_METRICS_LEGACY,
+    INDEX_METRICS,
+    INDEX_METRICS_6_1,
     LATENCIES_METRICS,
-    LAZY_METRICS,
+    LEGACY_INDEX_METRICS,
+    LEGACY_NAMESPACE_METRICS,
     LEGACY_SET_METRICS,
     NAMESPACE_METRICS,
     SET_METRICS,
+    SET_METRICS_6_4,
     STATS_METRICS,
-    TPS_METRICS,
     VERSION,
 )
 
@@ -37,7 +41,6 @@ def test_check(aggregator, instance, dd_run_check):
 
 
 def test_version_metadata(aggregator, instance, datadog_agent, dd_run_check):
-
     check = AerospikeCheck('aerospike', {}, [instance])
     check.check_id = 'test:123'
 
@@ -80,11 +83,17 @@ def test_openmetrics_e2e(dd_agent_check, instance_openmetrics_v2):
 
     aggregator.assert_service_check('aerospike.openmetrics.health', AgentCheck.OK, tags=tags)
 
-    for metric in EXPECTED_PROMETHEUS_METRICS:
-        aggregator.assert_metric(metric, tags=tags)
+    # for metric in EXPECTED_PROMETHEUS_METRICS:
+    #     aggregator.assert_metric(metric, tags=tags)
 
-    if version_parts >= [5, 6]:
-        for metric in EXPECTED_PROMETHEUS_METRICS_5_6:
+    if version_parts >= [7]:
+        for metric in EXPECTED_PROMETHEUS_METRICS_7:
+            aggregator.assert_metric(metric, tags=tags)
+    elif version_parts >= [6, 1]:
+        for metric in EXPECTED_PROMETHEUS_METRICS_6:
+            aggregator.assert_metric(metric, tags=tags)
+    elif version_parts >= [5, 6]:
+        for metric in EXPECTED_PROMETHEUS_METRICS_LEGACY:
             aggregator.assert_metric(metric, tags=tags)
 
     aggregator.assert_all_metrics_covered()
@@ -103,30 +112,38 @@ def test_metrics_warning(dd_run_check, instance_openmetrics_v2):
 def _test_check(aggregator):
     version_parts = [int(p) for p in VERSION.split('.')]
 
-    for metric in NAMESPACE_METRICS:
-        aggregator.assert_metric("aerospike.namespace.{}".format(metric))
-
-    if version_parts >= [5, 3]:
-        for metric in LATENCIES_METRICS:
-            aggregator.assert_metric(metric)
-        aggregator.assert_metric('aerospike.set.device_data_bytes')
-
+    if version_parts >= [6, 4]:
+        for metric in NAMESPACE_METRICS:
+            aggregator.assert_metric("aerospike.namespace.{}".format(metric))
     else:
-        for metric in TPS_METRICS:
+        for metric in LEGACY_NAMESPACE_METRICS:
             aggregator.assert_metric("aerospike.namespace.{}".format(metric))
 
-        for metric in LAZY_METRICS:
-            aggregator.assert_metric(metric)
+    for metric in LATENCIES_METRICS:
+        aggregator.assert_metric(metric)
 
     for metric in STATS_METRICS:
         aggregator.assert_metric("aerospike.{}".format(metric))
 
-    if version_parts >= [5, 6]:
+    if version_parts >= [7, 1]:
         for metric in SET_METRICS:
+            aggregator.assert_metric("aerospike.set.{}".format(metric))
+    elif version_parts >= [6, 4]:
+        for metric in SET_METRICS_6_4:
             aggregator.assert_metric("aerospike.set.{}".format(metric))
     else:
         for metric in LEGACY_SET_METRICS:
             aggregator.assert_metric("aerospike.set.{}".format(metric))
+
+    if version_parts >= [6, 4]:
+        for metric in INDEX_METRICS:
+            aggregator.assert_metric("aerospike.sindex.{}".format(metric))
+    elif version_parts >= [6, 1]:
+        for metric in INDEX_METRICS_6_1:
+            aggregator.assert_metric("aerospike.sindex.{}".format(metric))
+    else:
+        for metric in LEGACY_INDEX_METRICS:
+            aggregator.assert_metric("aerospike.sindex.{}".format(metric))
 
     aggregator.assert_all_metrics_covered()
 
